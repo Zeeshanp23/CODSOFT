@@ -1,100 +1,94 @@
 #include <iostream>
+#include <vector>
 #include <string>
 
 using namespace std;
 
-// Initialize game board to empty spaces
-char gameBoard[3][3] = {
-    {' ', ' ', ' '},
-    {' ', ' ', ' '},
-    {' ', ' ', ' '}
-};
+// initialize the game board
+vector<string> board = {"-", "-", "-", "-", "-", "-", "-", "-", "-"};
 
-// Print out the current game board
-void printBoard() {
-    cout << "   1  | 2  | 3 " << endl;
-    cout << "  ----------" << endl;
-    for (int i = 0; i < 3; i++) {
-        cout << i+1 << " ";
-        for (int j = 0; j < 3; j++) {
-            cout << "| " << gameBoard[i][j] << " ";
-        }
-        cout << "|" << endl;
-        cout << "  ------------" << endl;
-    }
+// define game functions
+void display_board() {
+    cout << board[0] << " | " << board[1] << " | " << board[2] << endl;
+    cout << "--+---+--" << endl;
+    cout << board[3] << " | " << board[4] << " | " << board[5] << endl;
+    cout << "--+---+--" << endl;
+    cout << board[6] << " | " << board[7] << " | " << board[8] << endl;
 }
 
-// Check if there is a winner
-bool checkWinner(char player) {
-    // Check rows
-    for (int i = 0; i < 3; i++) {
-        if (gameBoard[i][0] == player && gameBoard[i][1] == player && gameBoard[i][2] == player) {
+int player_input(string player) {
+    int move;
+    cout << "Player " << player << ", enter your move (1-9):";
+    cin >> move;
+    while (move < 1 || move > 9 || board[move-1] != "-") {
+        cout << "Invalid move, please try again:";
+        cin >> move;
+    }
+    return move-1;
+}
+
+bool check_win(string player) {
+    vector<vector<int>> win_patterns = {{0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6}};
+    for (vector<int> pattern : win_patterns) {
+        if (board[pattern[0]] == player && board[pattern[1]] == player && board[pattern[2]] == player) {
             return true;
         }
-    }
-    // Check columns
-    for (int j = 0; j < 3; j++) {
-        if (gameBoard[0][j] == player && gameBoard[1][j] == player && gameBoard[2][j] == player) {
-            return true;
-        }
-    }
-    // Check diagonals
-    if (gameBoard[0][0] == player && gameBoard[1][1] == player && gameBoard[2][2] == player) {
-        return true;
-    }
-    if (gameBoard[0][2] == player && gameBoard[1][1] == player && gameBoard[2][0] == player) {
-        return true;
     }
     return false;
 }
 
-int main() {
-    // Initialize player and game status variables
-    string player = "X";
-    bool gameOver = false;
-    
-    // Loop until the game is over
-    while (!gameOver) {
-        // Print out the current game board
-        printBoard();
-        
-        // Ask the player for their move
-        int row, col;
-        cout << player << ", enter row and column numbers (1-3): ";
-        cin >> row >> col;
-        
-        // Check if move is valid
-        if (row < 1 || row > 3 || col < 1 || col > 3) {
-            cout << "Invalid move! Try again." << endl;
-            continue;
-        }
-        if (gameBoard[row-1][col-1] != ' ') {
-            cout << "That cell is already occupied! Try again." << endl;
-            continue;
-        }
-        
-        // Update game board with player's move
-        gameBoard[row-1][col-1] = player[0];
-        
-        // Check for winner
-        if (checkWinner(player[0])) {
-            printBoard();
-            cout << player << " wins! Game over." << endl;
-            gameOver = true;
-        }
-        // Check for tie
-        else if (gameBoard[0][0] != ' ' && gameBoard[0][1] != ' ' && gameBoard[0][2] != ' ' &&
-                 gameBoard[1][0] != ' ' && gameBoard[1][1] != ' ' && gameBoard[1][2] != ' ' &&
-                 gameBoard[2][0] != ' ' && gameBoard[2][1] != ' ' && gameBoard[2][2] != ' ') {
-            printBoard();
-            cout << "It's a tie! Game over." << endl;
-            gameOver = true;
-        }
-        // Switch player
-        else {
-            player = (player == "X") ? "O" : "X";
+bool check_draw() {
+    for (string cell : board) {
+        if (cell == "-") {
+            return false;
         }
     }
-    
+    return true;
+}
+
+int main() {
+    // main game loop
+    string player = "X";
+    display_board();
+    while (true) {
+        int move = player_input(player);
+        board[move] = player;
+        display_board();
+        if (check_win(player)) {
+            cout << "Player " << player << " wins!" << endl;
+            break;
+        } else if (check_draw()) {
+            cout << "Game is a draw." << endl;
+            break;
+        }
+        player = (player == "X") ? "O" : "X";
+    }
+
+    // ask to play again
+    char play_again;
+    cout << "Play again? (y/n)";
+    cin >> play_again;
+    while (play_again == 'y') {
+        board = {"-", "-", "-", "-", "-", "-", "-", "-", "-"};
+        player = "X";
+        display_board();
+        while (true) {
+            int move = player_input(player);
+            board[move] = player;
+            display_board();
+            if (check_win(player)) {
+                cout << "Player " << player << " wins!" << endl;
+                break;
+            } else if (check_draw()) {
+                cout << "Game is a draw." << endl;
+                break;
+            }
+            player = (player == "X") ? "O" : "X";
+        }
+        cout << "Play again? (y/n)";
+        cin >> play_again;
+    }
+
+    cout << "Thanks for playing!" << endl;
     return 0;
 }
